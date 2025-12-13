@@ -1,0 +1,217 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>My Profile - AI Phishing Detector</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css" rel="stylesheet">
+</head>
+<body class="bg-gray-50">
+    <!-- Navigation -->
+    <nav class="bg-white shadow-lg">
+        <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+            <div class="flex justify-between h-16">
+                <div class="flex items-center">
+                    <i class="fas fa-shield-alt text-3xl text-blue-600 mr-3"></i>
+                    <h1 class="text-2xl font-bold text-gray-900">AI Phishing Detector</h1>
+                </div>
+                <div class="flex items-center space-x-4">
+                    <a href="/dashboard/" class="text-gray-700 hover:text-blue-600 transition">
+                        <i class="fas fa-home mr-2"></i> Dashboard
+                    </a>
+                    <span class="text-gray-700">{{ request.user.username }}</span>
+                    <a href="/logout/" class="text-red-600 hover:text-red-800">
+                        <i class="fas fa-sign-out-alt"></i> Logout
+                    </a>
+                </div>
+            </div>
+        </div>
+    </nav>
+
+    <!-- Main Content -->
+    <div class="max-w-4xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
+        
+        <!-- Page Header -->
+        <div class="mb-8">
+            <h2 class="text-3xl font-bold text-gray-900 mb-2">
+                <i class="fas fa-user-circle mr-3"></i>My Profile
+            </h2>
+            <p class="text-gray-600">Manage your account and connected services</p>
+        </div>
+
+        <!-- Messages -->
+        {% if messages %}
+            {% for message in messages %}
+            <div class="mb-6 p-4 rounded-lg {% if message.tags == 'error' %}bg-red-50 text-red-800 border border-red-200{% else %}bg-green-50 text-green-800 border border-green-200{% endif %}">
+                <i class="fas {% if message.tags == 'error' %}fa-exclamation-circle{% else %}fa-check-circle{% endif %} mr-2"></i>
+                {{ message }}
+            </div>
+            {% endfor %}
+        {% endif %}
+
+        <!-- Account Information -->
+        <div class="bg-white rounded-lg shadow-md p-8 mb-6">
+            <h3 class="text-xl font-bold text-gray-900 mb-6">
+                <i class="fas fa-id-card text-blue-600 mr-2"></i>
+                Account Information
+            </h3>
+            
+            <div class="space-y-4">
+                <div class="flex items-center justify-between border-b border-gray-200 pb-4">
+                    <div>
+                        <p class="text-sm text-gray-500">Username</p>
+                        <p class="text-lg font-semibold text-gray-900">{{ request.user.username }}</p>
+                    </div>
+                    <i class="fas fa-user text-gray-400 text-2xl"></i>
+                </div>
+                
+                <div class="flex items-center justify-between border-b border-gray-200 pb-4">
+                    <div>
+                        <p class="text-sm text-gray-500">Email Address</p>
+                        <p class="text-lg font-semibold text-gray-900">{{ request.user.email }}</p>
+                    </div>
+                    <i class="fas fa-envelope text-gray-400 text-2xl"></i>
+                </div>
+                
+                <div class="flex items-center justify-between">
+                    <div>
+                        <p class="text-sm text-gray-500">Member Since</p>
+                        <p class="text-lg font-semibold text-gray-900">{{ request.user.date_joined|date:"F d, Y" }}</p>
+                    </div>
+                    <i class="fas fa-calendar text-gray-400 text-2xl"></i>
+                </div>
+            </div>
+        </div>
+
+        <!-- Gmail Connection Status -->
+        <div class="bg-white rounded-lg shadow-md p-8 mb-6">
+            <h3 class="text-xl font-bold text-gray-900 mb-6">
+                <i class="fas fa-envelope text-blue-600 mr-2"></i>
+                Gmail Connection
+            </h3>
+            
+            {% if gmail_account.is_active %}
+            <div class="bg-green-50 border-2 border-green-200 rounded-lg p-6">
+                <div class="flex items-center justify-between mb-4">
+                    <div class="flex items-center">
+                        <i class="fas fa-check-circle text-green-600 text-3xl mr-4"></i>
+                        <div>
+                            <p class="text-lg font-semibold text-green-900">Connected</p>
+                            <p class="text-green-700">{{ gmail_account.email }}</p>
+                        </div>
+                    </div>
+                    <span class="px-3 py-1 bg-green-200 text-green-800 rounded-full text-sm font-semibold">
+                        Active
+                    </span>
+                </div>
+                
+                <div class="border-t border-green-200 pt-4 mt-4">
+                    <div class="grid grid-cols-3 gap-4 mb-4">
+                        <div class="text-center">
+                            <p class="text-2xl font-bold text-green-900">{{ total_emails }}</p>
+                            <p class="text-sm text-green-700">Emails Scanned</p>
+                        </div>
+                        <div class="text-center">
+                            <p class="text-2xl font-bold text-green-900">{{ safe_emails }}</p>
+                            <p class="text-sm text-green-700">Safe</p>
+                        </div>
+                        <div class="text-center">
+                            <p class="text-2xl font-bold text-red-600">{{ phishing_emails }}</p>
+                            <p class="text-sm text-green-700">Threats</p>
+                        </div>
+                    </div>
+                    
+                    <p class="text-sm text-green-700 mb-4">
+                        <i class="fas fa-clock mr-2"></i>
+                        Connected on {{ gmail_account.connected_at|date:"F d, Y" }}
+                    </p>
+                    
+                    <form method="POST" action="{% url "disconnect_gmail" %}" onsubmit="return confirm('Are you sure you want to disconnect your Gmail account?');">
+                        {% csrf_token %}
+                        <button type="submit" class="bg-red-600 text-white px-6 py-2 rounded-lg hover:bg-red-700 transition">
+                            <i class="fas fa-unlink mr-2"></i> Disconnect Gmail
+                        </button>
+                    </form>
+                </div>
+            </div>
+            {% else %}
+            <div class="bg-yellow-50 border-2 border-yellow-200 rounded-lg p-6">
+                <div class="flex items-center justify-between mb-4">
+                    <div class="flex items-center">
+                        <i class="fas fa-exclamation-triangle text-yellow-600 text-3xl mr-4"></i>
+                        <div>
+                            <p class="text-lg font-semibold text-yellow-900">Not Connected</p>
+                            <p class="text-yellow-700">Connect your Gmail to start scanning</p>
+                        </div>
+                    </div>
+                </div>
+                
+                <a href="{% url "connect_gmail" %}" class="inline-block bg-blue-600 text-white px-6 py-3 rounded-lg hover:bg-blue-700 transition mt-4">
+                    <i class="fas fa-plug mr-2"></i> Connect Gmail Account
+                </a>
+            </div>
+            {% endif %}
+        </div>
+
+        <!-- Security Settings -->
+        <div class="bg-white rounded-lg shadow-md p-8 mb-6">
+            <h3 class="text-xl font-bold text-gray-900 mb-6">
+                <i class="fas fa-shield-alt text-blue-600 mr-2"></i>
+                Security Settings
+            </h3>
+            
+            <div class="space-y-4">
+                <a href="#" class="flex items-center justify-between p-4 border-2 border-gray-200 rounded-lg hover:border-blue-500 hover:bg-blue-50 transition">
+                    <div class="flex items-center">
+                        <i class="fas fa-key text-blue-600 text-xl mr-4"></i>
+                        <div>
+                            <p class="font-semibold text-gray-900">Change Password</p>
+                            <p class="text-sm text-gray-600">Update your account password</p>
+                        </div>
+                    </div>
+                    <i class="fas fa-chevron-right text-gray-400"></i>
+                </a>
+                
+                <a href="#" class="flex items-center justify-between p-4 border-2 border-gray-200 rounded-lg hover:border-blue-500 hover:bg-blue-50 transition">
+                    <div class="flex items-center">
+                        <i class="fas fa-user-edit text-blue-600 text-xl mr-4"></i>
+                        <div>
+                            <p class="font-semibold text-gray-900">Edit Profile</p>
+                            <p class="text-sm text-gray-600">Update your personal information</p>
+                        </div>
+                    </div>
+                    <i class="fas fa-chevron-right text-gray-400"></i>
+                </a>
+            </div>
+        </div>
+
+        <!-- Danger Zone -->
+        <div class="bg-white rounded-lg shadow-md p-8 border-2 border-red-200">
+            <h3 class="text-xl font-bold text-red-900 mb-4">
+                <i class="fas fa-exclamation-triangle text-red-600 mr-2"></i>
+                Danger Zone
+            </h3>
+            
+            <p class="text-gray-600 mb-4">Once you delete your account, there is no going back. Please be certain.</p>
+            
+            <form method="POST" action="{% url 'delete_account' %}"
+                onsubmit="return confirm('Are you absolutely sure you want to permanently delete your account? This cannot be undone.');">
+                {% csrf_token %}
+                <button type="submit"
+                        class="bg-red-600 text-white px-6 py-2 rounded-lg hover:bg-red-700 transition">
+                    <i class="fas fa-trash mr-2"></i> Delete Account
+                </button>
+            </form>
+        </div>
+
+    </div>
+
+    <!-- Footer -->
+    <footer class="bg-white mt-12 py-6 border-t border-gray-200">
+        <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 text-center text-gray-600">
+            <p>&copy; 2024 AI Phishing Detector. Built for Academic Research.</p>
+        </div>
+    </footer>
+</body>
+</html>

@@ -1,0 +1,33 @@
+# Django Framework
+Django
+django-environ
+
+# Google Gmail API
+google-auth
+google-auth-oauthlib
+google-auth-httplib2
+google-api-python-client
+
+# Web scraping and analysis
+requests
+beautifulsoup4
+python-whois
+
+# AI/ML Libraries
+transformers
+torch
+numpy
+scikit-learn
+
+# Database For PostgreSQL
+psycopg2-binary  
+
+# Additional utilities
+python-dateutil
+pytz
+
+# Security
+cryptography
+
+# Development
+django-debug-toolbar

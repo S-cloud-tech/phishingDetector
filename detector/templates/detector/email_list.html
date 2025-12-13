@@ -1,0 +1,351 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Email List - AI Phishing Detector</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css" rel="stylesheet">
+</head>
+<body class="bg-gray-50">
+    <!-- Navigation -->
+    <nav class="bg-white shadow-lg">
+        <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+            <div class="flex justify-between h-16">
+                <div class="flex items-center">
+                    <i class="fas fa-shield-alt text-3xl text-blue-600 mr-3"></i>
+                    <h1 class="text-2xl font-bold text-gray-900">AI Phishing Detector</h1>
+                </div>
+                <div class="flex items-center space-x-4">
+                    <a href="{% url "dashboard" %}" class="text-gray-700 hover:text-blue-600 transition">
+                        <i class="fas fa-home mr-2"></i> Dashboard
+                    </a>
+                    <a href="{% url "profile" %}">
+                        <span class="text-gray-700 hover:text-blue-600 transition">{{ request.user.username }}</span>
+                    </a>
+                    <a href="{% url "logout" %}" class="text-red-600 hover:text-red-800">
+                        <i class="fas fa-sign-out-alt"></i> Logout
+                    </a>
+                </div>
+            </div>
+        </div>
+    </nav>
+
+    <!-- Main Content -->
+    <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
+        
+        <!-- Page Header -->
+        <div class="mb-8">
+            <h2 class="text-3xl font-bold text-gray-900 mb-2">
+                <i class="fas fa-inbox mr-3"></i>Scanned Emails
+            </h2>
+            <p class="text-gray-600">View and analyze all scanned emails from your inbox</p>
+        </div>
+
+        <!-- Filter Tabs -->
+        <div class="bg-white rounded-lg shadow-md mb-6">
+            <div class="border-b border-gray-200">
+                <nav class="flex -mb-px">
+                    <a href="?risk=all" class="{% if risk_filter == 'all' %}border-blue-600 text-blue-600{% else %}border-transparent text-gray-500 hover:text-gray-700 hover:border-gray-300{% endif %} whitespace-nowrap py-4 px-6 border-b-2 font-medium text-sm transition">
+                        <i class="fas fa-envelope mr-2"></i>
+                        All Emails
+                    </a>
+                    <a href="?risk=safe" class="{% if risk_filter == 'safe' %}border-green-600 text-green-600{% else %}border-transparent text-gray-500 hover:text-gray-700 hover:border-gray-300{% endif %} whitespace-nowrap py-4 px-6 border-b-2 font-medium text-sm transition">
+                        <i class="fas fa-check-circle mr-2"></i>
+                        Safe
+                    </a>
+                    <a href="?risk=phishing" class="{% if risk_filter == 'phishing' %}border-orange-600 text-orange-600{% else %}border-transparent text-gray-500 hover:text-gray-700 hover:border-gray-300{% endif %} whitespace-nowrap py-4 px-6 border-b-2 font-medium text-sm transition">
+                        <i class="fas fa-exclamation-triangle mr-2"></i>
+                        Phishing
+                    </a>
+                    <a href="?risk=ai_phishing" class="{% if risk_filter == 'ai_phishing' %}border-red-600 text-red-600{% else %}border-transparent text-gray-500 hover:text-gray-700 hover:border-gray-300{% endif %} whitespace-nowrap py-4 px-6 border-b-2 font-medium text-sm transition">
+                        <i class="fas fa-robot mr-2"></i>
+                        AI Phishing
+                    </a>
+                </nav>
+            </div>
+        </div>
+
+        <!-- Email List -->
+        {% if error %}
+        <div class="bg-red-50 border-l-4 border-red-400 p-6 rounded-r-lg">
+            <div class="flex items-center">
+                <i class="fas fa-exclamation-circle text-red-400 text-2xl mr-4"></i>
+                <div>
+                    <h3 class="text-lg font-medium text-red-800">Error</h3>
+                    <p class="text-red-700 mt-1">{{ error }}</p>
+                </div>
+            </div>
+        </div>
+        {% elif not emails %}
+        <div class="bg-white rounded-lg shadow-md p-12 text-center">
+            <i class="fas fa-inbox text-gray-300 text-6xl mb-4"></i>
+            <h3 class="text-2xl font-semibold text-gray-700 mb-2">No Emails Found</h3>
+            <p class="text-gray-500 mb-6">Start scanning your inbox to see results here</p>
+            <button onclick="startScan()" id="scanBtn" class="bg-blue-600 text-white px-8 py-3 rounded-lg hover:bg-blue-700 transition">
+                <i class="fas fa-search mr-2"></i> Start Scan
+            </button>
+        </div>
+        {% else %}
+        <div class="bg-white rounded-lg shadow-md overflow-hidden">
+            <div class="overflow-x-auto">
+                <table class="min-w-full divide-y divide-gray-200">
+                    <thead class="bg-gray-50">
+                        <tr>
+                            <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                                Risk Level
+                            </th>
+                            <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                                Subject
+                            </th>
+                            <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                                Sender
+                            </th>
+                            <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                                Date
+                            </th>
+                            <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                                AI Detected
+                            </th>
+                            <th class="px-6 py-3 text-right text-xs font-medium text-gray-500 uppercase tracking-wider">
+                                Actions
+                            </th>
+                        </tr>
+                    </thead>
+                    <tbody class="bg-white divide-y divide-gray-200">
+                        {% for email in emails %}
+                        <tr class="hover:bg-gray-50 transition">
+                            <td class="px-6 py-4 whitespace-nowrap">
+                                {% if email.risk_level == 'SAFE' %}
+                                <span class="px-3 py-1 inline-flex text-xs leading-5 font-semibold rounded-full bg-green-100 text-green-800">
+                                    <i class="fas fa-check-circle mr-1"></i> Safe
+                                </span>
+                                {% elif email.risk_level == 'LOW' %}
+                                <span class="px-3 py-1 inline-flex text-xs leading-5 font-semibold rounded-full bg-blue-100 text-blue-800">
+                                    <i class="fas fa-info-circle mr-1"></i> Low
+                                </span>
+                                {% elif email.risk_level == 'MEDIUM' %}
+                                <span class="px-3 py-1 inline-flex text-xs leading-5 font-semibold rounded-full bg-yellow-100 text-yellow-800">
+                                    <i class="fas fa-exclamation-circle mr-1"></i> Medium
+                                </span>
+                                {% elif email.risk_level == 'HIGH' %}
+                                <span class="px-3 py-1 inline-flex text-xs leading-5 font-semibold rounded-full bg-orange-100 text-orange-800">
+                                    <i class="fas fa-exclamation-triangle mr-1"></i> High
+                                </span>
+                                {% else %}
+                                <span class="px-3 py-1 inline-flex text-xs leading-5 font-semibold rounded-full bg-red-100 text-red-800">
+                                    <i class="fas fa-skull-crossbones mr-1"></i> Critical
+                                </span>
+                                {% endif %}
+                            </td>
+                            <td class="px-6 py-4">
+                                <div class="text-sm font-medium text-gray-900 max-w-md truncate">
+                                    {{ email.subject }}
+                                </div>
+                                <div class="text-sm text-gray-500 max-w-md truncate">
+                                    {{ email.snippet }}
+                                </div>
+                            </td>
+                            <td class="px-6 py-4 whitespace-nowrap">
+                                <div class="text-sm text-gray-900">{{ email.sender|truncatechars:30 }}</div>
+                            </td>
+                            <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-500">
+                                {{ email.received_date|date:"M d, Y" }}
+                                <br>
+                                <span class="text-xs text-gray-400">{{ email.received_date|date:"H:i" }}</span>
+                            </td>
+                            <td class="px-6 py-4 whitespace-nowrap text-center">
+                                {% if email.is_ai_generated %}
+                                <i class="fas fa-robot text-red-600 text-xl" title="AI-Generated Content Detected"></i>
+                                {% else %}
+                                <i class="fas fa-user text-gray-400 text-xl" title="Human-Written"></i>
+                                {% endif %}
+                            </td>
+                            <td class="px-6 py-4 whitespace-nowrap text-right text-sm font-medium">
+                                <a href="/emails/{{ email.id }}/" class="text-blue-600 hover:text-blue-900 transition">
+                                    <i class="fas fa-eye mr-1"></i> View Details
+                                </a>
+                            </td>
+                        </tr>
+                        {% endfor %}
+                    </tbody>
+                </table>
+            </div>
+        </div>
+
+        <!-- Summary Stats -->
+        <div class="mt-6 bg-white rounded-lg shadow-md p-6">
+            <div class="flex items-center justify-between">
+                <div>
+                    <h3 class="text-lg font-semibold text-gray-900">
+                        <i class="fas fa-chart-bar mr-2 text-blue-600"></i>
+                        Showing {{ emails|length }} email{{ emails|length|pluralize }}
+                    </h3>
+                    <p class="text-sm text-gray-500 mt-1">
+                        Filter: 
+                        {% if risk_filter == 'all' %}All Emails
+                        {% elif risk_filter == 'safe' %}Safe Emails Only
+                        {% elif risk_filter == 'phishing' %}Phishing Threats Only
+                        {% elif risk_filter == 'ai_phishing' %}AI-Generated Phishing Only
+                        {% endif %}
+                    </p>
+                </div>
+                <a href="{% url "dashboard" %}" class="text-blue-600 hover:text-blue-800 font-medium">
+                    <i class="fas fa-arrow-left mr-2"></i> Back to Dashboard
+                </a>
+            </div>
+        </div>
+        {% endif %}
+
+        <!-- Legend -->
+        <div class="mt-6 bg-blue-50 border-l-4 border-blue-400 p-6 rounded-r-lg">
+            <h4 class="text-lg font-semibold text-blue-900 mb-3">
+                <i class="fas fa-info-circle mr-2"></i>
+                Understanding Risk Levels
+            </h4>
+            <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-5 gap-4">
+                <div class="flex items-start">
+                    <span class="px-2 py-1 inline-flex text-xs leading-5 font-semibold rounded-full bg-green-100 text-green-800 mr-2">
+                        Safe
+                    </span>
+                    <span class="text-sm text-blue-800">No threats detected</span>
+                </div>
+                <div class="flex items-start">
+                    <span class="px-2 py-1 inline-flex text-xs leading-5 font-semibold rounded-full bg-blue-100 text-blue-800 mr-2">
+                        Low
+                    </span>
+                    <span class="text-sm text-blue-800">Minor concerns</span>
+                </div>
+                <div class="flex items-start">
+                    <span class="px-2 py-1 inline-flex text-xs leading-5 font-semibold rounded-full bg-yellow-100 text-yellow-800 mr-2">
+                        Medium
+                    </span>
+                    <span class="text-sm text-blue-800">Some suspicious indicators</span>
+                </div>
+                <div class="flex items-start">
+                    <span class="px-2 py-1 inline-flex text-xs leading-5 font-semibold rounded-full bg-orange-100 text-orange-800 mr-2">
+                        High
+                    </span>
+                    <span class="text-sm text-blue-800">Likely phishing attempt</span>
+                </div>
+                <div class="flex items-start">
+                    <span class="px-2 py-1 inline-flex text-xs leading-5 font-semibold rounded-full bg-red-100 text-red-800 mr-2">
+                        Critical
+                    </span>
+                    <span class="text-sm text-blue-800">AI-generated phishing</span>
+                </div>
+            </div>
+        </div>
+
+    </div>
+
+     <!-- Scanning Modal -->
+    <div id="scanModal" class="hidden fixed inset-0 bg-gray-600 bg-opacity-50 overflow-y-auto h-full w-full z-50">
+        <div class="relative top-20 mx-auto p-5 border w-96 shadow-lg rounded-md bg-white">
+            <div class="mt-3 text-center">
+                <div class="mx-auto flex items-center justify-center h-12 w-12 rounded-full bg-blue-100">
+                    <i class="fas fa-spinner fa-spin text-blue-600 text-2xl"></i>
+                </div>
+                <h3 class="text-lg leading-6 font-medium text-gray-900 mt-4">Scanning Inbox</h3>
+                <div class="mt-2 px-7 py-3">
+                    <p class="text-sm text-gray-500">Please wait while we scan your emails for threats...</p>
+                    <div class="mt-4">
+                        <div class="w-full bg-gray-200 rounded-full h-2.5">
+                            <div id="progressBar" class="bg-blue-600 h-2.5 rounded-full" style="width: 0%"></div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+
+    <!-- Footer -->
+    <footer class="bg-white mt-12 py-6 border-t border-gray-200">
+        <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 text-center text-gray-600">
+            <p>&copy; 2024 AI Phishing Detector. Built for Academic Research.</p>
+        </div>
+    </footer>
+
+    <script>
+        function startScan() {
+            const modal = document.getElementById('scanModal');
+            const scanBtn = document.getElementById('scanBtn');
+            const progressBar = document.getElementById('progressBar');
+            
+            // Show modal
+            modal.classList.remove('hidden');
+            scanBtn.disabled = true;
+            
+            // Simulate progress
+            let progress = 0;
+            const progressInterval = setInterval(() => {
+                progress += 2;
+                progressBar.style.width = progress + '%';
+                if (progress >= 90) {
+                    clearInterval(progressInterval);
+                }
+            }, 100);
+            
+            // Get CSRF token from cookie
+            function getCookie(name) {
+                let cookieValue = null;
+                if (document.cookie && document.cookie !== '') {
+                    const cookies = document.cookie.split(';');
+                    for (let i = 0; i < cookies.length; i++) {
+                        const cookie = cookies[i].trim();
+                        if (cookie.substring(0, name.length + 1) === (name + '=')) {
+                            cookieValue = decodeURIComponent(cookie.substring(name.length + 1));
+                            break;
+                        }
+                    }
+                }
+                return cookieValue;
+            }
+            
+            const csrftoken = getCookie('csrftoken');
+            
+            // Make API call
+            fetch('/api/scan/', {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/x-www-form-urlencoded',
+                    'X-CSRFToken': csrftoken
+                },
+                body: 'max_emails=50'
+            })
+            .then(response => {
+                if (!response.ok) {
+                    return response.json().then(err => {
+                        throw new Error(err.error || 'Scan failed');
+                    });
+                }
+                return response.json();
+            })
+            .then(data => {
+                console.log('Scan completed:', data);
+                clearInterval(progressInterval);
+                progressBar.style.width = '100%';
+                
+                setTimeout(() => {
+                    modal.classList.add('hidden');
+                    scanBtn.disabled = false;
+                    
+                    // Show success message
+                    alert(`Scan complete!\n\nTotal: ${data.stats.total}\nSafe: ${data.stats.safe}\nPhishing: ${data.stats.phishing}\nAI Phishing: ${data.stats.ai_phishing}`);
+                    
+                    // Reload page to show updated stats
+                    location.reload();
+                }, 1000);
+            })
+            .catch(error => {
+                console.error('Error:', error);
+                clearInterval(progressInterval);
+                modal.classList.add('hidden');
+                scanBtn.disabled = false;
+                alert('Error scanning emails: ' + error.message + '\n\nCheck the console for more details.');
+            });
+        }
+    </script>
+</body>
+</html>
