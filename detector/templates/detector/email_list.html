@@ -138,6 +138,7 @@
                                 </span>
                                 {% endif %}
                             </td>
+                            {% comment %} Subjetct {% endcomment %}
                             <td class="px-6 py-4">
                                 <div class="text-sm font-medium text-gray-900 max-w-md truncate">
                                     {{ email.subject }}
@@ -146,14 +147,17 @@
                                     {{ email.snippet }}
                                 </div>
                             </td>
+                            {% comment %} Sender {% endcomment %}
                             <td class="px-6 py-4 whitespace-nowrap">
                                 <div class="text-sm text-gray-900">{{ email.sender|truncatechars:30 }}</div>
                             </td>
+                            {% comment %} Date {% endcomment %}
                             <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-500">
                                 {{ email.received_date|date:"M d, Y" }}
                                 <br>
                                 <span class="text-xs text-gray-400">{{ email.received_date|date:"H:i" }}</span>
                             </td>
+                            {% comment %} Sender {% endcomment %}
                             <td class="px-6 py-4 whitespace-nowrap text-center">
                                 {% if email.is_ai_generated %}
                                 <i class="fas fa-robot text-red-600 text-xl" title="AI-Generated Content Detected"></i>
