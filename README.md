@@ -178,7 +178,7 @@ Visit `http://localhost:8000` to access the application.
 
 1. Go to "APIs & Services" > "Credentials"
 2. Click "Create Credentials" > "OAuth client ID"
-3. Choose "Desktop app"
+3. Choose "Web"
 4. Name it "Phishing Detector Client"
 5. Download the JSON file
 6. Rename it to `credentials.json`
@@ -197,7 +197,7 @@ Visit `http://localhost:8000` to access the application.
 1. **Register an Account**
    - Visit the landing page
    - Click "Get Started Free"
-   - Fill in registration form
+   - Fill in registration form OR Click Connect with Google
 
 2. **Connect Gmail**
    - After registration, you'll be redirected to Gmail connection
@@ -252,15 +252,13 @@ phishing-detector/
 │       ├── auth/
 │       |    ├── register.html    # User registration
 │       |    ├── login.html       # User login     
-│       ├── detector/
-│       |    ├── landing.html     # Public homepage
-│       |    ├── profile.html     # User profile
+│       ├── detector/    
 │       |    ├── dashboard.html   # Main dashboard
 │       |    ├── connect_gmail.html
 │       |    ├── email_list.html
 │       |    └── email_detail.html
 │       ├── profile/
-│       |    ├── profile.html
+│       |    ├── profile.html      # User profile
 │       └── index.html
 │
 └── tests/

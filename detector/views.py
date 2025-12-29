@@ -6,6 +6,7 @@ from django.http import JsonResponse, HttpResponse
 from django.views.decorators.http import require_http_methods
 from django.contrib import messages
 from django.utils import timezone
+from django.db.models import Q
 from .models import *
 from .gmail_client import GmailClient
 from .link_analyzer import LinkAnalyzer
@@ -211,9 +212,8 @@ def dashboard(request):
             ).count()
             
             ai_phishing = EmailMessage.objects.filter(
-                gmail_account=gmail_account,
-                is_phishing=True,
-                is_ai_generated=True
+                Q(is_ai_generated=True) | Q(is_phishing=True),
+                gmail_account=gmail_account
             ).count()
         else:
             # Gmail inactive or not connected
@@ -337,7 +337,7 @@ def start_scan(request):
         try:
             gmail_client = GmailClient()
             link_analyzer = LinkAnalyzer()
-            ai_detector = AITextDetector()
+            ai_detector = AITextDetector(use_transformer=True)
         except Exception as e:
             scan.status = 'FAILED'
             scan.error_message = f'Failed to initialize analyzers: {str(e)}'
@@ -561,10 +561,9 @@ def email_list(request):
             if risk_filter == 'phishing':
                 emails = emails.filter(is_phishing=True)
             elif risk_filter == 'ai_phishing':
-                emails = emails.filter(is_phishing=True, is_ai_generated=True)
+                emails = emails.filter(Q(is_ai_generated=True) | Q(is_phishing=True))
             elif risk_filter == 'safe':
                 emails = emails.filter(risk_level='SAFE')
-        
         context = {
             'emails': emails,
             'risk_filter': risk_filter
@@ -698,4 +697,3 @@ def debug_last_scan(request):
             'status': 'error',
             'message': str(e)
         }, status=500)
-
