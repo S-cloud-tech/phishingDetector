@@ -54,7 +54,7 @@ google-auth==2.48.0
 google-auth-httplib2==0.3.0
 google-auth-oauthlib==1.2.4
 googleapis-common-protos==1.72.0
-gunicorn==23.0.0
+gunicorn==25.1.0
 h11==0.16.0
 httpcore==1.0.9
 httplib2==0.31.2
@@ -72,6 +72,7 @@ markdown-it-py==4.0.0
 MarkupSafe==3.0.3
 mdurl==0.1.2
 multidict==6.7.0
+numpy==2.4.2
 oauthlib==3.3.1
 openpyxl==3.1.5
 packaging==25.0
@@ -83,7 +84,7 @@ propcache==0.4.1
 proto-plus==1.27.1
 protobuf==6.33.5
 psycopg2==2.9.11
-psycopg2-binary==2.9.10
+psycopg2-binary==3.3.2
 pur==7.3.3
 pyasn1==0.6.2
 pyasn1_modules==0.4.2
@@ -103,6 +104,7 @@ python-decouple==3.8
 python-dotenv==1.2.1
 python-http-client==3.3.7
 python-multipart==0.0.22
+python-whois==0.9.6
 python3-openid==3.2.0
 pytz==2025.2
 PyYAML==6.0.3
@@ -127,6 +129,9 @@ soupsieve==2.8.3
 sqlparse==0.5.3
 starkbank-ecdsa==2.2.0
 starlette==0.52.1
+sciki-learn==1.8.0
+toruch==2.10.0
+transformers==5.1.0
 twilio==9.8.4
 typer==0.21.2
 typing-inspection==0.4.2
