@@ -1,12 +1,10 @@
 import os
 import pickle
 from google.auth.transport.requests import Request
-from google.oauth2.credentials import Credentials
 from google_auth_oauthlib.flow import InstalledAppFlow
 from googleapiclient.discovery import build
 from googleapiclient.errors import HttpError
 import base64
-from email.mime.text import MIMEText
 import re
 from concurrent.futures import ThreadPoolExecutor, as_completed
 
@@ -70,7 +68,7 @@ class GmailClient:
             print(f'An error occurred: {error}')
             return False
     
-    def get_messages(self, max_results=50, query=''):
+    def get_messages(self, max_results=500, query=''):
         """Fetch messages from Gmail inbox with pagination support."""
         if not self.service:
             raise Exception("Not authenticated. Call authenticate() first.")

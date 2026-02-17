@@ -212,7 +212,7 @@ def dashboard(request):
             ).count()
             
             ai_phishing = EmailMessage.objects.filter(
-                Q(is_ai_generated=True) | Q(is_phishing=True),
+                Q(is_ai_generated=True),
                 gmail_account=gmail_account
             ).count()
         else:
@@ -359,7 +359,7 @@ def start_scan(request):
         
         # Scan emails
         try:
-            max_emails = int(request.POST.get('max_emails', 50))
+            max_emails = int(request.POST.get('max_emails', 500))
             emails = gmail_client.scan_inbox(max_results=max_emails)
         except Exception as e:
             scan.status = 'FAILED'
@@ -561,7 +561,7 @@ def email_list(request):
             if risk_filter == 'phishing':
                 emails = emails.filter(is_phishing=True)
             elif risk_filter == 'ai_phishing':
-                emails = emails.filter(Q(is_ai_generated=True) | Q(is_phishing=True))
+                emails = emails.filter(Q(is_ai_generated=True))
             elif risk_filter == 'safe':
                 emails = emails.filter(risk_level='SAFE')
         context = {
