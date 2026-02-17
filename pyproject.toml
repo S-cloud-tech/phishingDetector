@@ -7,7 +7,7 @@ requires-python = ">=3.11"
 dependencies = [
     "gunicorn>=25.1.0",
     "numpy>=2.4.2",
-    "psycopg2-binary>=2.9,<3.0",
+    "psycopg2-binary>=2.9.11",
     "python-whois>=0.9.6",
     "scikit-learn>=1.8.0",
     "torch>=2.10.0",
